@@ -126,7 +126,7 @@ contract FlightSuretyApp {
     
    /**
     * @dev Called after oracle has updated flight status
-    * looks for 20
+    *
     */  
     function processFlightStatus
                                 (
