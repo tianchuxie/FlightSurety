@@ -11,6 +11,7 @@ import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 /************************************************** */
 contract FlightSuretyApp {
     using SafeMath for uint256; // Allow SafeMath functions to be called for all uint256 types (similar to "prototype" in Javascript)
+    //balance.add()	balance.sub()	balance.mul()	balance.div()
 
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
@@ -26,10 +27,12 @@ contract FlightSuretyApp {
 
     address private contractOwner;          // Account used to deploy contract
 
+    FlightSuretyData flightSuretyData;
+
     struct Flight {
         bool isRegistered;
         uint8 statusCode;
-        uint256 updatedTimestamp;        
+        uint256 updatedTimestamp;
         address airline;
     }
     mapping(bytes32 => Flight) private flights;
@@ -47,10 +50,10 @@ contract FlightSuretyApp {
     *      This is used on all state changing functions to pause the contract in 
     *      the event there is an issue that needs to be fixed
     */
-    modifier requireIsOperational() 
+    modifier requireIsOperational()
     {
          // Modify to call data contract's status
-        require(true, "Contract is currently not operational");  
+        require(true, "Contract is currently not operational");
         _;  // All modifiers require an "_" which indicates where the function body will be added
     }
 
@@ -73,10 +76,12 @@ contract FlightSuretyApp {
     */
     constructor
                                 (
-                                ) 
-                                public 
+                                    // address dataContract
+                                )
+                                public
     {
         contractOwner = msg.sender;
+        // flightSuretyData = FlightSuretyData(dataContract);
     }
 
     /********************************************************************************************/
@@ -334,4 +339,8 @@ contract FlightSuretyApp {
 
 // endregion
 
-}   
+}
+
+contract FlightSuretyData {
+    /** for interfaces */
+}
