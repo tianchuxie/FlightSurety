@@ -14,11 +14,17 @@ contract FlightSuretyData {
     uint constant M = 5;
     address[] multiCalls = new address[](0);
 
+    /** Multiparty Consensus counter */
+    mapping(address => uint256) originAirline;
+
+
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
 
     /** used for authorizeCaller */
     mapping(address => uint256) authorizedContracts;
+
+
 
 
     struct AirLine {
@@ -181,6 +187,7 @@ contract FlightSuretyData {
     {
         require(airlines[msg.sender].isRegistered, "Only existing airline may register a new airline.");
         require(!airlines[newAirline].isRegistered, "Airline is already registered.");
+        originAirline[msg.sender] = originAirline[msg.sender].add(1);
         airlines[newAirline] = AirLine ({
             // id: 0,
             isRegistered: true,
