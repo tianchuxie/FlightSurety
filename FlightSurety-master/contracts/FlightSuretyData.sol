@@ -3,17 +3,35 @@ pragma solidity >=0.4.25;
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 contract FlightSuretyData {
+
+    event Funded (string ok, address ad);
     using SafeMath for uint256;
 
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
+    uint constant M = 5;
+    address[] multiCalls = new address[](0);
+
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
 
     /** used for authorizeCaller */
     mapping(address => uint256) authorizedContracts;
+
+
+    struct AirLine {
+        // string id;
+        bool isRegistered;
+        bool isFund;
+        uint256 fund;
+        // bool isAdmin;
+        // uint256 sales;
+        // address wallet;
+    }
+    mapping(address => AirLine) airlines;
+
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -25,10 +43,17 @@ contract FlightSuretyData {
     */
     constructor
                                 (
+                                    // address newAirline
                                 )
                                 public
     {
         contractOwner = msg.sender;
+        airlines[contractOwner] = AirLine ({
+            // id: 0,
+            isRegistered: true,
+            isFund: false,
+            fund: 0
+        });
     }
 
     /********************************************************************************************/
@@ -40,10 +65,10 @@ contract FlightSuretyData {
 
     /**
     * @dev Modifier that requires the "operational" boolean variable to be "true"
-    *      This is used on all state changing functions to pause the contract in 
+    *      This is used on all state changing functions to pause the contract in
     *      the event there is an issue that needs to be fixed
     */
-    modifier requireIsOperational() 
+    modifier requireIsOperational()
     {
         require(operational, "Contract is currently not operational");
         _;  // All modifiers require an "_" which indicates where the function body will be added
@@ -80,11 +105,11 @@ contract FlightSuretyData {
     * @dev Get operating status of contract
     *
     * @return A bool that is the current operating status
-    */      
-    function isOperational() 
-                            public 
-                            view 
-                            returns(bool) 
+    */
+    function isOperational()
+                            public
+                            view
+                            returns(bool)
     {
         return operational;
     }
@@ -94,41 +119,83 @@ contract FlightSuretyData {
     * @dev Sets contract operations on/off
     *
     * When operational mode is disabled, all write transactions except for this one will fail
-    */    
+    */
     function setOperatingStatus
                             (
                                 bool mode
-                            ) 
+                            )
                             external
-                            requireContractOwner 
+                            // requireContractOwner
     {
         operational = mode;
+        // require(mode != operational, "New mode must be different from existing mode");
+        // bool isDuplicate = false;
+        // for (uint c = 0; c < multiCalls.length; c++) {
+        //     if (multiCalls[c] == msg.sender) {
+        //         isDuplicate = true;
+        //         break;
+        //     }
+        // }
+        // require(!isDuplicate, "Caller has already called this function.");
+        // multiCalls.push(msg.sender);
+        // if (multiCalls.length >= M) {
+        //     // operational = mode;
+        //     multiCalls = new address[](0);
+        // }
     }
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    // function isAirline(address newAirline) external pure returns (bool){
+    //     return false;
+    // }
+
+    function isAirline
+                            (
+                                address newAirline
+                            )
+                            external
+                            view
+                            returns (bool)
+    {
+        // return airlines[newAirline].isAirline;
+        return airlines[newAirline].isFund;
+        // return airlines[newAirline].fund == 0;
+        // return false;
+    }
+
    /**
     * @dev Add an airline to the registration queue
     *      Can only be called from FlightSuretyApp contract
     *
-    */   
+    */
     function registerAirline
-                            (   
+                            (   address newAirline
                             )
                             external
-                            pure
+                            // pure
+                            requireIsOperational
+                            requireContractOwner
     {
+        require(airlines[msg.sender].isRegistered, "Only existing airline may register a new airline.");
+        require(!airlines[newAirline].isRegistered, "Airline is already registered.");
+        airlines[newAirline] = AirLine ({
+            // id: 0,
+            isRegistered: true,
+            isFund: false,
+            fund: 0
+        });
     }
 
 
    /**
     * @dev Buy insurance for a flight
     *
-    */   
+    */
     function buy
-                            (                             
+                            (
                             )
                             external
                             payable
@@ -146,7 +213,6 @@ contract FlightSuretyData {
                                 pure
     {
     }
-    
 
     /**
      *  @dev Transfers eligible payout funds to insuree
@@ -164,13 +230,20 @@ contract FlightSuretyData {
     * @dev Initial funding for the insurance. Unless there are too many delayed flights
     *      resulting in insurance payouts, the contract should be self-sustaining
     *
-    */   
+    */
     function fund
-                            (   
+                            (
+                                // address newAirline
                             )
                             public
                             payable
     {
+        // require(airlines[msg.sender].isRegistered, "airLine has to be register before using");
+        // require(!airlines[msg.sender].isFund, "the airline is already funded");
+        airlines[msg.sender].isFund = true;
+        airlines[msg.sender].fund = 10 ether;
+        // msg.sender.transfer(0 ether);
+        emit Funded('founded', msg.sender);
     }
 
     function getFlightKey
@@ -181,7 +254,7 @@ contract FlightSuretyData {
                         )
                         pure
                         internal
-                        returns(bytes32) 
+                        returns(bytes32)
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
@@ -190,9 +263,9 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    function() 
-                            external 
-                            payable 
+    function()
+                            external
+                            payable
     {
         fund();
     }

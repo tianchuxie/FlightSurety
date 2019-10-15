@@ -75,7 +75,32 @@ contract('Test Flight Surety Tests', async (accounts) => {
 
   });
 
-  it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
+  it('(airline) M of N, in which M = 5', async () => {
+    
+    // ARRANGE
+    let na1 = accounts[2];
+    let na2 = accounts[3];
+    let na3 = accounts[4];
+    let na4 = accounts[5];
+    let na5 = accounts[6];
+    let na6 = accounts[7];
+
+    // ACT
+    try {
+        await config.flightSuretyApp.registerAirline(na1, {from: config.firstAirline});
+        await config.flightSuretyApp.fund({from: na1});
+    }
+    catch(e) {
+
+    }
+    let result = await config.flightSuretyData.isAirline.call(na1); 
+
+    // ASSERT
+    assert.equal(result, true, "Airline should not be able to register another airline if it hasn't provided funding");
+
+  });
+
+  it('(airline)- Airline Ante cannot register an Airline using registerAirline() if it is not funded', async () => {
     
     // ARRANGE
     let newAirline = accounts[2];
@@ -85,12 +110,36 @@ contract('Test Flight Surety Tests', async (accounts) => {
         await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
     }
     catch(e) {
-
+        console.log('there is de', e.message);
     }
     let result = await config.flightSuretyData.isAirline.call(newAirline); 
 
     // ASSERT
     assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
+
+  });
+
+  it('(airline)- Airline Ante can register an Airline using registerAirline() if it is funded', async () => {
+    
+    // ARRANGE
+    let newAirline = accounts[2];
+
+    // ACT
+    try {
+        //{ from: config.testAddresses[2] }
+        await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
+        
+    }
+    catch(e) {
+        // console.log(e);
+        // console.log('there is eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', e.message);
+        await config.flightSuretyData.fund({from: newAirline}); 
+    }
+    let result = await config.flightSuretyData.isAirline.call(newAirline); 
+    
+
+    // ASSERT
+    assert.equal(result, true, "Airline should not be able to register another airline if it hasn't provided funding");
 
   });
  
