@@ -166,7 +166,7 @@ contract FlightSuretyData {
                             view
                             returns (bool)
     {
-        // return airlines[newAirline].isAirline;
+        // return airlines[newAirline].isRegistered;
         return airlines[newAirline].isFund;
         // return airlines[newAirline].fund == 0;
         // return false;
