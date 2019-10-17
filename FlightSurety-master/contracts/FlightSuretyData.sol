@@ -166,8 +166,8 @@ contract FlightSuretyData {
                             view
                             returns (bool)
     {
-        // return airlines[newAirline].isRegistered;
-        return airlines[newAirline].isFund;
+        return airlines[newAirline].isRegistered;
+        // return airlines[newAirline].isFund;
         // return airlines[newAirline].fund == 0;
         // return false;
     }
@@ -245,7 +245,7 @@ contract FlightSuretyData {
                             public
                             payable
     {
-        // require(airlines[msg.sender].isRegistered, "airLine has to be register before using");
+        require(airlines[msg.sender].isRegistered, "airLine has to be register before using");
         // require(!airlines[msg.sender].isFund, "the airline is already funded");
         airlines[msg.sender].isFund = true;
         airlines[msg.sender].fund = 10 ether;

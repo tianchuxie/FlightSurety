@@ -130,15 +130,15 @@ contract('Test Flight Surety Tests', async (accounts) => {
     let na6 = accounts[7];
 
     // ACT
-    try {
-        for (var i = 2; i <=7; i++ ) {
-            await config.flightSuretyApp.registerAirline(accounts[i], {from: config.firstAirline});
-            // await config.flightSuretyApp.fund({from: accounts[i]});
+    for (var i = 2; i <=7; i++ ) {
+        try {
+                await config.flightSuretyApp.registerAirline(accounts[i], {from: config.firstAirline});
+        }
+        catch(e) {
+
         }
     }
-    catch(e) {
-
-    }
+    await config.flightSuretyData.fund({from: accounts[2]});
     // let result = await config.flightSuretyData.isAirline.call(na1); 
     for (var i = 2; i <=7; i++ ) {
         let result = await config.flightSuretyData.isAirline.call(accounts[i]); 
